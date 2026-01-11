@@ -77,12 +77,26 @@ def main(page: ft.Page):
             ),
         ],
     )
+
+    Subtittle= ft.Row(
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=[
+        ft.Text(
+            "Listado de Películas",
+            size=18,
+            weight=ft.FontWeight.NORMAL,
+            color=ft.Colors.WHITE,
+        ),
+    ]
+    )
     contenido = ft.Column(
         expand=True,
         alignment=ft.MainAxisAlignment.START,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[
             header,
+            Subtittle,
             ft.Container(
                 content=tabla,
                 expand=True,

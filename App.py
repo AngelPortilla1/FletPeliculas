@@ -58,24 +58,31 @@ def main(page: ft.Page):
             for p in peliculas
         ],
     )
-
-    contenido = ft.Column(
-        expand=True,
+    # Header con ícono + título uno al lado del otro
+    header = ft.Row(
         alignment=ft.MainAxisAlignment.CENTER,
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        spacing=20,
         controls=[
             ft.Icon(
                 ft.Icons.MOVIE,
-                size=70,
+                size=64,
                 color=ft.Colors.AMBER_400,
             ),
             ft.Text(
                 "Listado de Películas",
-                size=26,
+                size=32,
                 weight=ft.FontWeight.BOLD,
                 color=ft.Colors.WHITE,
-                text_align=ft.TextAlign.CENTER,
             ),
+        ],
+    )
+    contenido = ft.Column(
+        expand=True,
+        alignment=ft.MainAxisAlignment.START,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        controls=[
+            header,
             ft.Container(
                 content=tabla,
                 expand=True,

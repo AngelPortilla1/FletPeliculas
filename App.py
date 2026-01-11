@@ -1,14 +1,11 @@
 import flet as ft
 from database import Session
 from models.pelicula import Pelicula
+from views.home_view import home_view
 
 
-# [NUEVO]
-def obtener_todos():
-    session = Session()
-    peliculas = session.query(Pelicula).all()
-    session.close()
-    return peliculas
+
+
 
 
 def main(page: ft.Page):
@@ -19,93 +16,9 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
-    peliculas = obtener_todos()  # [NUEVO]
 
-    tabla = ft.DataTable(  # [NUEVO]
-        expand=True,
-        columns=[
-            ft.DataColumn(ft.Text("ID")),
-            ft.DataColumn(ft.Text("Título")),
-            ft.DataColumn(ft.Text("Director")),
-            ft.DataColumn(ft.Text("Puntuación")),
-            ft.DataColumn(ft.Text("Acciones")),
-        ],
-        rows=[
-            ft.DataRow(
-                cells=[
-                    ft.DataCell(ft.Text(str(p.id))),
-                    ft.DataCell(ft.Text(p.titulo)),
-                    ft.DataCell(ft.Text(p.director)),
-                    ft.DataCell(ft.Text(str(p.puntuacion))),
-                    ft.DataCell(
-                        ft.Row(
-                            controls=[
-                                ft.IconButton(
-                                    icon=ft.Icons.EDIT,
-                                    tooltip="Editar",
-                                    disabled=True,
-                                ),
-                                ft.IconButton(
-                                    icon=ft.Icons.DELETE,
-                                    tooltip="Eliminar",
-                                    disabled=True,
-                                ),
-                            ]
-                        )
-                    ),
-                ]
-            )
-            for p in peliculas
-        ],
-    )
-    # Header con ícono + título uno al lado del otro
-    header = ft.Row(
-        alignment=ft.MainAxisAlignment.CENTER,
-        vertical_alignment=ft.CrossAxisAlignment.CENTER,
-        spacing=20,
-        controls=[
-            ft.Icon(
-                ft.Icons.MOVIE,
-                size=64,
-                color=ft.Colors.AMBER_400,
-            ),
-            ft.Text(
-                "Listado de Películas",
-                size=32,
-                weight=ft.FontWeight.BOLD,
-                color=ft.Colors.WHITE,
-            ),
-        ],
-    )
 
-    Subtittle= ft.Row(
-        alignment=ft.MainAxisAlignment.CENTER,
-        vertical_alignment=ft.CrossAxisAlignment.CENTER,
-        controls=[
-        ft.Text(
-            "Listado de Películas",
-            size=18,
-            weight=ft.FontWeight.NORMAL,
-            color=ft.Colors.WHITE,
-        ),
-    ]
-    )
-    contenido = ft.Column(
-        expand=True,
-        alignment=ft.MainAxisAlignment.START,
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        controls=[
-            header,
-            Subtittle,
-            ft.Container(
-                content=tabla,
-                expand=True,
-                padding=20,
-            ),
-        ],
-    )
-
-    page.add(contenido)
+    page.add(home_view(page))
 
 
 if __name__ == "__main__":

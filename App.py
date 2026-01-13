@@ -1,6 +1,7 @@
 import flet as ft
 from views.home_view import home_view
 from components.navbar import navbar
+from views.form_view import  form_view
 
 
 def main(page: ft.Page):
@@ -21,31 +22,7 @@ def main(page: ft.Page):
 
     def mostrar_form_placeholder(e=None):
         content_area.controls.clear()  # [NUEVO]
-        content_area.controls.append(
-            ft.Column(
-                expand=True,
-                alignment=ft.MainAxisAlignment.CENTER,
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                controls=[
-                    ft.Icon(
-                        icon =ft.Icons.CONSTRUCTION,
-                        size=60,
-                        color=ft.Colors.AMBER_400,
-                    ),
-                    ft.Text(
-                        "Formulario en construcción",
-                        size=22,
-                        weight=ft.FontWeight.BOLD,
-                        color=ft.Colors.WHITE,
-                        text_align=ft.TextAlign.CENTER,
-                    ),
-                    ft.Text(
-                        "Aquí se agregará la película",
-                        color=ft.Colors.GREY_300,
-                    ),
-                ],
-            )
-        )
+        content_area.controls.append(form_view(page))
         page.update()  # [NUEVO]
 
     # Navbar

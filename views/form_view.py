@@ -1,23 +1,31 @@
 import flet as ft
+from Services.movie_service import insert_movie
 
 
 def form_view(page: ft.Page):
-    # GET: mostrar formulario vacío
+    titulo = ft.TextField(label="Título", expand=True)
+    director = ft.TextField(label="Director", expand=True)
+    puntuacion = ft.TextField(label="Puntuación (1-10)", expand=True)
 
-    titulo = ft.TextField(
-        label="Título",
-        expand=True,
-    )
+    mensaje = ft.Text(color=ft.Colors.RED_400)
 
-    director = ft.TextField(
-        label="Director",
-        expand=True,
-    )
+    def guardar(e):
+        if not titulo.value or not director.value or not puntuacion.value:
+            mensaje.value = "Todos los campos son obligatorios"
+            page.update()
+            return
 
-    puntuacion = ft.TextField(
-        label="Puntuación (1-10)",
-        expand=True,
-    )
+        try:
+            rating = int(puntuacion.value)
+            if rating < 1 or rating > 10:
+                raise ValueError
+        except ValueError:
+            mensaje.value = "La puntuación debe ser un número entre 1 y 10"
+            page.update()
+            return
+
+        insert_movie(titulo.value, director.value, rating)
+        page.go("/")  # volver al home
 
     botones = ft.Row(
         alignment=ft.MainAxisAlignment.CENTER,
@@ -25,7 +33,7 @@ def form_view(page: ft.Page):
             ft.ElevatedButton(
                 "Guardar",
                 icon=ft.Icons.SAVE,
-                disabled=True,  # aún sin acción
+                on_click=guardar,
             ),
             ft.OutlinedButton(
                 "Cancelar",
@@ -50,7 +58,6 @@ def form_view(page: ft.Page):
                 size=26,
                 weight=ft.FontWeight.BOLD,
                 color=ft.Colors.WHITE,
-                text_align=ft.TextAlign.CENTER,
             ),
             ft.Container(
                 width=400,
@@ -60,6 +67,7 @@ def form_view(page: ft.Page):
                         titulo,
                         director,
                         puntuacion,
+                        mensaje,
                         botones,
                     ],
                 ),

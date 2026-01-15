@@ -22,7 +22,7 @@ def main(page: ft.Page):
 
     def mostrar_form_placeholder(e=None):
         content_area.controls.clear()  # [NUEVO]
-        content_area.controls.append(form_view(page))
+        content_area.controls.append(form_view(page,mostrar_home))
         page.update()  # [NUEVO]
 
     # Navbar

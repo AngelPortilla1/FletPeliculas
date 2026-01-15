@@ -2,7 +2,8 @@ import flet as ft
 from Services.pelicula_service import crear
 
 
-def form_view(page: ft.Page):
+# [MODIFICADO] Añadimos el parámetro 'volver_home'
+def form_view(page: ft.Page, volver_home):
     titulo = ft.TextField(label="Título", expand=True)
     director = ft.TextField(label="Director", expand=True)
     puntuacion = ft.TextField(
@@ -15,7 +16,6 @@ def form_view(page: ft.Page):
     mensaje = ft.Text(color=ft.Colors.RED_400, text_align=ft.TextAlign.CENTER)
 
     def guardar(e):
-        # Limpiar mensaje anterior
         mensaje.value = ""
         page.update()
 
@@ -30,7 +30,7 @@ def form_view(page: ft.Page):
 
         try:
             rating = int(pun)
-            if rating < 0 or rating > 10:  # ← alineado con el backend
+            if rating < 0 or rating > 10:
                 raise ValueError
         except ValueError:
             mensaje.value = "La puntuación debe ser un número entero entre 0 y 10"
@@ -40,22 +40,22 @@ def form_view(page: ft.Page):
         resultado = crear({"titulo": tit, "director": dir_, "puntuacion": rating})
 
         if resultado["ok"]:
-            page.show_dialog(  # ← Cambio clave aquí
-                ft.SnackBar(
-                    content=ft.Text(
-                        "¡Película registrada correctamente!",
-                        color=ft.Colors.WHITE
-                    ),
-                    bgcolor=ft.Colors.GREEN_800,
-                    duration=3000,  # 3 segundos
-                    behavior=ft.SnackBarBehavior.FLOATING,  # Opcional: más moderno
-                )
+            # Corrección del SnackBar (show_dialog no sirve para SnackBar)
+            snack = ft.SnackBar(
+                content=ft.Text("¡Película registrada correctamente!", color=ft.Colors.WHITE),
+                bgcolor=ft.Colors.GREEN_800
             )
-            page.go("/")  # Redirigir después de mostrar
+            page.overlay.append(snack)
+            snack.open = True
+            page.update()
+
+            # [MODIFICADO] Usamos la función callback en vez de page.go
+            volver_home()
         else:
             mensaje.value = resultado["mensaje"]
             mensaje.color = ft.Colors.RED_400
             page.update()
+
     botones = ft.Row(
         alignment=ft.MainAxisAlignment.CENTER,
         spacing=20,
@@ -70,7 +70,8 @@ def form_view(page: ft.Page):
             ft.OutlinedButton(
                 "Cancelar",
                 icon=ft.Icons.CANCEL,
-                on_click=lambda e: page.go("/"),
+                # [MODIFICADO] Llamamos a la función pasada por parámetro
+                on_click=lambda e: volver_home(),
             ),
         ],
     )
@@ -81,17 +82,8 @@ def form_view(page: ft.Page):
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         spacing=20,
         controls=[
-            ft.Icon(
-                icon=ft.Icons.MOVIE_EDIT,
-                size=70,
-                color=ft.Colors.AMBER_400,
-            ),
-            ft.Text(
-                "Agregar Película",
-                size=28,
-                weight=ft.FontWeight.BOLD,
-                color=ft.Colors.WHITE,
-            ),
+            ft.Icon(icon=ft.Icons.MOVIE_EDIT, size=70, color=ft.Colors.AMBER_400),
+            ft.Text("Agregar Película", size=28, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
             ft.Container(
                 width=420,
                 padding=20,
@@ -100,13 +92,7 @@ def form_view(page: ft.Page):
                 content=ft.Column(
                     spacing=16,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    controls=[
-                        titulo,
-                        director,
-                        puntuacion,
-                        mensaje,
-                        botones,
-                    ],
+                    controls=[titulo, director, puntuacion, mensaje, botones],
                 ),
             ),
         ],

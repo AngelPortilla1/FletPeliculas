@@ -61,3 +61,28 @@ def delete_movie(movie_id: int) -> dict:
 
     finally:
         session.close()
+
+
+def obtener_por_id(pelicula_id):
+    session = Session()
+    # Usamos .get() de SQLAlchemy que es lo más directo por ID
+    pelicula = session.get(Pelicula, pelicula_id)
+    session.close()
+    return pelicula
+
+def actualizar(pelicula_id, datos):
+    session = Session()
+    try:
+        pelicula = session.get(Pelicula, pelicula_id)
+        if pelicula:
+            pelicula.titulo = datos.get("titulo")
+            pelicula.director = datos.get("director")
+            pelicula.puntuacion = datos.get("puntuacion")
+            session.commit()
+            return {"ok": True, "mensaje": "Película actualizada correctamente"}
+        return {"ok": False, "mensaje": "No se encontró la película"}
+    except Exception as e:
+        session.rollback()
+        return {"ok": False, "mensaje": f"Error: {str(e)}"}
+    finally:
+        session.close()

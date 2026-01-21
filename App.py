@@ -1,11 +1,10 @@
 import flet as ft
 from views.home_view import home_view
 from components.navbar import navbar
-from views.form_view import  form_view
+from views.form_view import form_view
 
 
 def main(page: ft.Page):
-    # [MODIFICADO]
     page.title = "🎞️ Flet Películas"
     page.theme_mode = ft.ThemeMode.DARK
     page.bgcolor = ft.Colors.BLUE_GREY_900
@@ -13,24 +12,24 @@ def main(page: ft.Page):
     page.vertical_alignment = ft.MainAxisAlignment.START
 
     # Área dinámica de contenido
-    content_area = ft.Column(expand=True)  # [NUEVO]
+    content_area = ft.Column(expand=True)
 
     def mostrar_home(e=None):
-        content_area.controls.clear()  # [NUEVO]
-        content_area.controls.append(home_view(page))  # [NUEVO]
-        page.update()  # [NUEVO]
+        content_area.controls.clear()
+        content_area.controls.append(home_view(page, mostrar_home))  # ← Pasar la función
+        page.update()
 
     def mostrar_form_placeholder(e=None):
-        content_area.controls.clear()  # [NUEVO]
-        content_area.controls.append(form_view(page,mostrar_home))
-        page.update()  # [NUEVO]
+        content_area.controls.clear()
+        content_area.controls.append(form_view(page, mostrar_home))
+        page.update()
 
     # Navbar
-    menu = navbar(mostrar_home, mostrar_form_placeholder)  # [NUEVO]
+    menu = navbar(mostrar_home, mostrar_form_placeholder)
 
-    page.add(menu, content_area)  # [MODIFICADO]
+    page.add(menu, content_area)
 
-    mostrar_home()  # [NUEVO]
+    mostrar_home()
 
 
 if __name__ == "__main__":

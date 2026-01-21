@@ -39,3 +39,25 @@ def crear(datos):
 
 
     return {"ok":True, "mensaje":"Pelicula registrada correctamente"}
+
+
+def delete_movie(movie_id: int) -> dict:
+    session = Session()
+    try:
+
+        pelicula = session.get(Pelicula, movie_id)
+
+        if not pelicula:
+            return {"ok": False, "mensaje": f"No existe película con id {movie_id}"}
+
+        session.delete(pelicula)
+        session.commit()
+
+        return {"ok": True, "mensaje": "Película eliminada correctamente"}
+
+    except Exception as e:
+        session.rollback()
+        return {"ok": False, "mensaje": f"Error al eliminar: {str(e)}"}
+
+    finally:
+        session.close()

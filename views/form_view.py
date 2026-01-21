@@ -1,59 +1,51 @@
 import flet as ft
-from Services.pelicula_service import crear
+from Services.pelicula_service import crear, actualizar, obtener_por_id
 
 
 # [MODIFICADO] Añadimos el parámetro 'volver_home'
-def form_view(page: ft.Page, volver_home):
-    titulo = ft.TextField(label="Título", expand=True)
-    director = ft.TextField(label="Director", expand=True)
-    puntuacion = ft.TextField(
-        label="Puntuación (0-10)",
-        expand=True,
-        keyboard_type=ft.KeyboardType.NUMBER,
-        max_length=2,
-    )
+def form_view(page: ft.Page, volver_home, pelicula_id=None):
+    # Variables de control
+    es_edicion = pelicula_id is not None
+    titulo_input = ft.TextField(label="Título", expand=True)
+    director_input = ft.TextField(label="Director", expand=True)
+    puntuacion_input = ft.TextField(label="Puntuación (0-10)", expand=True, keyboard_type=ft.KeyboardType.NUMBER)
+
+    # [NUEVO] Si es edición, pre-llenamos los campos
+    if es_edicion:
+        peli = obtener_por_id(pelicula_id)
+        if peli:
+            titulo_input.value = peli.titulo
+            director_input.value = peli.director
+            puntuacion_input.value = str(peli.puntuacion)
 
     mensaje = ft.Text(color=ft.Colors.RED_400, text_align=ft.TextAlign.CENTER)
 
     def guardar(e):
-        mensaje.value = ""
-        page.update()
+        datos = {
+            "titulo": titulo_input.value.strip(),
+            "director": director_input.value.strip(),
+            "puntuacion": int(puntuacion_input.value) if puntuacion_input.value.isdigit() else -1
+        }
 
-        tit = titulo.value.strip()
-        dir_ = director.value.strip()
-        pun = puntuacion.value.strip()
-
-        if not tit or not dir_ or not pun:
-            mensaje.value = "Todos los campos son obligatorios"
-            page.update()
+        # Validación rápida
+        if not datos["titulo"] or not datos["director"]:
+            mensaje.value = "Campos obligatorios vacíos";
+            page.update();
             return
 
-        try:
-            rating = int(pun)
-            if rating < 0 or rating > 10:
-                raise ValueError
-        except ValueError:
-            mensaje.value = "La puntuación debe ser un número entero entre 0 y 10"
-            page.update()
-            return
-
-        resultado = crear({"titulo": tit, "director": dir_, "puntuacion": rating})
+        # Decidir si CREAR o ACTUALIZAR
+        if es_edicion:
+            resultado = actualizar(pelicula_id, datos)
+        else:
+            resultado = crear(datos)
 
         if resultado["ok"]:
-            # Corrección del SnackBar (show_dialog no sirve para SnackBar)
-            snack = ft.SnackBar(
-                content=ft.Text("¡Película registrada correctamente!", color=ft.Colors.WHITE),
-                bgcolor=ft.Colors.GREEN_800
-            )
+            snack = ft.SnackBar(ft.Text(resultado["mensaje"]), bgcolor=ft.Colors.GREEN_800)
             page.overlay.append(snack)
             snack.open = True
-            page.update()
-
-            # [MODIFICADO] Usamos la función callback en vez de page.go
-            volver_home()
+            volver_home()  # Regresar al home
         else:
             mensaje.value = resultado["mensaje"]
-            mensaje.color = ft.Colors.RED_400
             page.update()
 
     botones = ft.Row(
@@ -77,23 +69,21 @@ def form_view(page: ft.Page, volver_home):
     )
 
     return ft.Column(
-        expand=True,
-        alignment=ft.MainAxisAlignment.CENTER,
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        spacing=20,
+        expand=True, horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         controls=[
-            ft.Icon(icon=ft.Icons.MOVIE_EDIT, size=70, color=ft.Colors.AMBER_400),
-            ft.Text("Agregar Película", size=28, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
+            ft.Icon(ft.Icons.EDIT_SQUARE if es_edicion else ft.Icons.MOVIE_EDIT, size=70, color=ft.Colors.AMBER_400),
+            ft.Text("Editar Película" if es_edicion else "Agregar Película", size=28, weight="bold"),
             ft.Container(
-                width=420,
-                padding=20,
-                bgcolor=ft.Colors.with_opacity(0.15, ft.Colors.WHITE),
+                width=420, padding=20, bgcolor=ft.Colors.with_opacity(0.15, ft.Colors.WHITE),
                 border_radius=12,
-                content=ft.Column(
-                    spacing=16,
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    controls=[titulo, director, puntuacion, mensaje, botones],
-                ),
-            ),
-        ],
+                content=ft.Column([
+                    titulo_input, director_input, puntuacion_input, mensaje,
+                    ft.Row([
+                        ft.ElevatedButton("Actualizar" if es_edicion else "Guardar", on_click=guardar,
+                                          bgcolor=ft.Colors.GREEN_700, color=ft.Colors.WHITE),
+                        ft.OutlinedButton("Cancelar", on_click=lambda _: volver_home())
+                    ], alignment="center")
+                ])
+            )
+        ]
     )

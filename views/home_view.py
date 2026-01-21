@@ -3,7 +3,7 @@ from Services.pelicula_service import obtener_todos
 from Services.pelicula_service import delete_movie
 
 
-def home_view(page: ft.Page, refrescar_callback=None):  # ← Añadir parámetro
+def home_view(page: ft.Page, refrescar_callback=None, editar_callback=None):  # ← Añadir parámetro
 
     def crear_tabla():
         """Crea o recrea la tabla con los datos actuales"""
@@ -35,7 +35,9 @@ def home_view(page: ft.Page, refrescar_callback=None):  # ← Añadir parámetro
                                     ft.IconButton(
                                         icon=ft.Icons.EDIT,
                                         tooltip="Editar",
-                                        disabled=True
+                                        icon_color=ft.Colors.BLUE_400,  # Color para que resalte
+                                        on_click=lambda e, pid=p.id: editar_callback(pid) if editar_callback else print("No hay función de edición")
+                                        # Llamamos al callback con el ID
                                     ),
                                     ft.IconButton(
                                         icon=ft.Icons.DELETE,

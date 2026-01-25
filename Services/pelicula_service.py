@@ -2,6 +2,24 @@ from database import Session
 from models.pelicula import Pelicula
 
 
+def validar_datos(datos):
+    """Función auxiliar para centralizar la validación lógica."""
+    titulo = datos.get("titulo", "").strip()
+    director = datos.get("director", "").strip()
+    puntuacion = datos.get("puntuacion")
+
+    if not titulo or not director:
+        return None, "Todos los campos son obligatorios."
+
+    try:
+        # Convertimos a entero por seguridad si viene como string
+        puntuacion_int = int(puntuacion)
+        if not (1 <= puntuacion_int <= 10):
+            return None, "La puntuación debe estar entre 1 y 10."
+    except (ValueError, TypeError):
+        return None, "La puntuación debe ser un número entero válido."
+
+    return (titulo, director, puntuacion_int), None
 def obtener_todos():
     session = Session()
     peliculas = session.query(Pelicula).all()
@@ -10,19 +28,21 @@ def obtener_todos():
 
 
 def crear(datos):
-    titulo = datos.get("titulo","").strip()
-    director = datos.get("director","").strip()
-    puntuacion = datos.get("puntuacion")
+    campos, error = validar_datos(datos)
+    if error:
+        return {"ok": False, "mensaje": error}
 
-    #Validaciones simples
-    if not titulo or not director:
-        return {"ok":False, "mensaje":"Todos los campos son obligatorios"}
+    titulo, director, puntuacion = campos
+    session = Session()
     try:
-        puntuacion = int(puntuacion)
-    except Exception:
-        return {"ok":False, "mensaje":"La puntuacion debe ser un un numero entero"}
-    if puntuacion <0 or puntuacion > 10:
-        return {"ok":False, "mensaje":"La puntuacion debe ser un numero entre 0 y 10"}
+        nueva = Pelicula(titulo=titulo, director=director, puntuacion=puntuacion)
+        session.add(nueva)
+        session.commit()
+        return {"ok": True, "mensaje": "Película registrada con éxito."}
+    except Exception as e:
+        return {"ok": False, "mensaje": f"Error de base de datos: {str(e)}"}
+    finally:
+        session.close()
 
 
     #Guardar en BD
@@ -71,16 +91,21 @@ def obtener_por_id(pelicula_id):
     return pelicula
 
 def actualizar(pelicula_id, datos):
+    campos, error = validar_datos(datos)
+    if error:
+        return {"ok": False, "mensaje": error}
+
+    titulo, director, puntuacion = campos
     session = Session()
     try:
         pelicula = session.get(Pelicula, pelicula_id)
         if pelicula:
-            pelicula.titulo = datos.get("titulo")
-            pelicula.director = datos.get("director")
-            pelicula.puntuacion = datos.get("puntuacion")
+            pelicula.titulo = titulo
+            pelicula.director = director
+            pelicula.puntuacion = puntuacion
             session.commit()
-            return {"ok": True, "mensaje": "Película actualizada correctamente"}
-        return {"ok": False, "mensaje": "No se encontró la película"}
+            return {"ok": True, "mensaje": "Película actualizada correctamente."}
+        return {"ok": False, "mensaje": "No se encontró la película."}
     except Exception as e:
         session.rollback()
         return {"ok": False, "mensaje": f"Error: {str(e)}"}
